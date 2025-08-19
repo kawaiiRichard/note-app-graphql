@@ -1,5 +1,5 @@
 import styles from "./RightPanel.module.css";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { NoteContext } from "../../contexts/NoteContext";
 import AddNote from "../AddNote/AddNote";
 import close from "../../assets/svg/close-large.svg";
@@ -11,8 +11,16 @@ import { ALL_NOTES } from "../../apollo/graphql/queries";
 import NoNotes from "../NoNotes/NoNotes";
 
 function RightPanel() {
-  const { selectedNote, setSelectedNote, isAddingNote, totalNotes } =
-    useContext(NoteContext);
+  const {
+    selectedNote,
+    setSelectedNote,
+    isAddingNote,
+    isEditingNote,
+    totalNotes,
+    setIsEditingNote,
+  } = useContext(NoteContext);
+
+  const [editNoteData, setEditNoteData] = useState(null);
 
   const [deleteNote, { error: deleteError }] = useMutation(DELETE_NOTE, {
     update(cache, { data: { deleteNote } }) {
@@ -33,8 +41,37 @@ function RightPanel() {
     },
   });
 
+  const handleEditClick = () => {
+    setEditNoteData({
+      id: selectedNote.id,
+      title: selectedNote.title,
+      description: selectedNote.description,
+      date: selectedNote.date,
+    });
+    setIsEditingNote(true);
+  };
+
+  const handleCloseEdit = () => {
+    setIsEditingNote(false);
+    setEditNoteData(null);
+  };
+
+  const closeWindow = () => {
+    setSelectedNote(null);
+    setIsEditingNote(false);
+    setEditNoteData(null);
+  };
+
   if (isAddingNote) {
-    return <AddNote />;
+    return <AddNote>Добавить заметку</AddNote>;
+  }
+
+  if (isEditingNote) {
+    return (
+      <AddNote editData={editNoteData} onCancel={handleCloseEdit}>
+        Редактировать заметку
+      </AddNote>
+    );
   }
 
   if (!selectedNote && totalNotes === 0) {
@@ -49,24 +86,23 @@ function RightPanel() {
     return `Ошибка: ${deleteError}`;
   }
 
-  const closeWindow = () => {
-    setSelectedNote(null);
-  };
-
   return (
-    <>
-      <div className={styles.main}>
-        <div className={styles.header}>
-          <div className={styles.title}>{selectedNote.title}</div>
-          <img
-            onClick={closeWindow}
-            className={styles.img}
-            src={close}
-            alt="Закрыть"
-          />
+    <div className={styles.main}>
+      <div className={styles.header}>
+        <div className={styles.title}>{selectedNote.title}</div>
+        <img
+          onClick={closeWindow}
+          className={styles.img}
+          src={close}
+          alt="Закрыть"
+        />
+      </div>
+      <FormattedDate dateString={selectedNote.date} />
+      <div className={styles.description}>{selectedNote.description}</div>
+      <div className={styles.footer}>
+        <div className={styles.change} onClick={handleEditClick}>
+          Изменить
         </div>
-        <FormattedDate dateString={selectedNote.date} />
-        <div className={styles.description}>{selectedNote.description}</div>
         <img
           onClick={() =>
             deleteNote({
@@ -78,7 +114,7 @@ function RightPanel() {
           alt="Удалить"
         />
       </div>
-    </>
+    </div>
   );
 }
 

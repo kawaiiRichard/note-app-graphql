@@ -1,80 +1,125 @@
 import styles from "./AddNote.module.css";
 import { useMutation } from "@apollo/client";
-import { CREATE_NOTE } from "../../apollo/graphql/mutations";
+import { CREATE_NOTE, UPDATE_NOTE } from "../../apollo/graphql/mutations";
 import { ALL_NOTES } from "../../apollo/graphql/queries";
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { NoteContext } from "../../contexts/NoteContext";
 
-function AddNote() {
+function AddNote({ children, editData, onCancel }) {
   const { setIsAddingNote } = useContext(NoteContext);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [createNote, { error }] = useMutation(CREATE_NOTE, {
+
+  const [createNote, { error: createError }] = useMutation(CREATE_NOTE, {
     update(cache, { data: { createNote } }) {
       const { notes } = cache.readQuery({ query: ALL_NOTES });
-
       cache.writeQuery({
         query: ALL_NOTES,
-        data: {
-          notes: [createNote, ...notes],
-        },
+        data: { notes: [createNote, ...notes] },
       });
     },
   });
 
-  const handleAddNote = () => {
-    if (title.trim().length && description.trim().length) {
-      createNote({
-        variables: {
-          title: title,
-          description: description,
-          created_at: new Date().toISOString(),
-          user_id: 123,
-        },
-      });
+  const [updateNote, { error: updateError }] = useMutation(UPDATE_NOTE, {
+    update(cache, { data: { updateNote } }) {
+      const existingNotes = cache.readQuery({ query: ALL_NOTES });
+      if (existingNotes && existingNotes.notes) {
+        const newNotes = existingNotes.notes.map((note) =>
+          note.id === updateNote.id ? updateNote : note
+        );
+        cache.writeQuery({
+          query: ALL_NOTES,
+          data: { notes: newNotes },
+        });
+      }
+    },
+  });
+
+  useEffect(() => {
+    if (editData) {
+      setTitle(editData.title);
+      setDescription(editData.description);
+    } else {
       setTitle("");
       setDescription("");
     }
+  }, [editData]);
+
+  const handleSaveNote = () => {
+    if (title.trim().length && description.trim().length) {
+      if (editData) {
+        updateNote({
+          variables: {
+            id: editData.id,
+            title: title,
+            description: description,
+          },
+        });
+      } else {
+        createNote({
+          variables: {
+            title: title,
+            description: description,
+            created_at: new Date().toISOString(),
+            user_id: 123,
+          },
+        });
+      }
+      setTitle("");
+      setDescription("");
+      setIsAddingNote(false);
+      if (onCancel) onCancel();
+    }
+  };
+
+  const handleCancel = () => {
+    setTitle("");
+    setDescription("");
     setIsAddingNote(false);
+    if (onCancel) onCancel();
   };
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
-      handleAddNote();
+      handleSaveNote();
+    }
+    if (e.key === "Escape") {
+      handleCancel();
     }
   };
 
-  if (error) {
+  if (createError || updateError) {
     return <div className={styles.main}>Ошибка</div>;
   }
 
   return (
-    <>
-      <div className={styles.main}>
-        <input
-          className={styles.input}
-          placeholder="Введите название..."
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          onKeyDown={handleKeyDown}
-          type="text"
-        />
-        <textarea
-          className={styles.textarea}
-          placeholder="Введите описание..."
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          onKeyDown={handleKeyDown}
-          name=""
-          id=""
-        ></textarea>
+    <div className={styles.main}>
+      <input
+        className={styles.input}
+        placeholder="Введите название..."
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        onKeyDown={handleKeyDown}
+        type="text"
+      />
+      <textarea
+        className={styles.textarea}
+        placeholder="Введите описание..."
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        onKeyDown={handleKeyDown}
+      ></textarea>
 
-        <button onClick={handleAddNote} className={styles.btn}>
-          Добавить заметку
+      <div className={styles.buttons}>
+        <button onClick={handleSaveNote} className={styles.btn}>
+          {editData ? "Сохранить изменения" : children}
+        </button>
+        <button onClick={handleCancel} className={styles["cancel-btn"]}>
+          Отмена
         </button>
       </div>
-    </>
+    </div>
   );
 }
 

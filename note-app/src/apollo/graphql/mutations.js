@@ -28,3 +28,13 @@ export const DELETE_NOTE = gql`
     }
   }
 `;
+
+export const UPDATE_NOTE = gql`
+  mutation UpdateNote($id: ID!, $title: String, $description: String) {
+    updateNote(id: $id, title: $title, description: $description) {
+      id
+      title
+      description
+    }
+  }
+`;
