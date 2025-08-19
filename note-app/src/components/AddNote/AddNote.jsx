@@ -29,6 +29,7 @@ function AddNote() {
         variables: {
           title: title,
           description: description,
+          created_at: new Date().toISOString(),
           user_id: 123,
         },
       });
