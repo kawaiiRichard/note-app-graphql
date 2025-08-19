@@ -12,6 +12,15 @@ function LeftPanel() {
   const { selectedNote, setSelectedNote, setIsAddingNote } =
     useContext(NoteContext);
 
+  const handleNoteClick = (note) => {
+    setIsAddingNote(false);
+    if (selectedNote && selectedNote.id === note.id) {
+      setSelectedNote(null);
+    } else {
+      setSelectedNote(note);
+    }
+  };
+
   if (loading) {
     return "Загрузка";
   }
@@ -33,10 +42,7 @@ function LeftPanel() {
               key={item.id}
               note={item}
               isSelected={selectedNote}
-              onClick={() => {
-                setIsAddingNote(false);
-                setSelectedNote(item);
-              }}
+              onClick={() => handleNoteClick(item)}
             />
           ))}
         </div>

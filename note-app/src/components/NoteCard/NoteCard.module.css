@@ -8,6 +8,12 @@
   border-radius: 5px;
   cursor: pointer;
   border-right: 3px solid transparent;
+  user-select: none;
+  transition: box-shadow 0.5s ease, border-right 0.25s ease;
+}
+
+.main:hover {
+  box-shadow: 0 4px 8px rgba(0, 255, 0, 0.3);
 }
 
 .title {
@@ -26,5 +32,5 @@
 }
 
 .selected {
-  border-right: 3px solid green;
+  border-right: 2px solid green;
 }

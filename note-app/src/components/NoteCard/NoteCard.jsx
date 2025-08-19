@@ -3,13 +3,17 @@ import styles from "./NoteCard.module.css";
 function NoteCard({ isSelected, note, onClick }) {
   const maxDescSize = 25;
 
+  const handleClick = () => {
+    onClick(isSelected && isSelected.id === note.id ? null : note);
+  };
+
   return (
     <>
       <div
         className={`${styles.main} ${
           isSelected && isSelected.id === note.id ? styles.selected : ""
         }`}
-        onClick={onClick}
+        onClick={handleClick}
       >
         <div className={styles.title}>{note.title}</div>
         <div className={styles.description}>
