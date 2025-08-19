@@ -5,10 +5,18 @@ export const NoteContext = createContext();
 export const NoteProvider = ({ children }) => {
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [selectedNote, setSelectedNote] = useState(null);
+  const [totalNotes, setTotalNotes] = useState(0);
 
   return (
     <NoteContext.Provider
-      value={{ selectedNote, setSelectedNote, isAddingNote, setIsAddingNote }}
+      value={{
+        totalNotes,
+        setTotalNotes,
+        selectedNote,
+        setSelectedNote,
+        isAddingNote,
+        setIsAddingNote,
+      }}
     >
       {children}
     </NoteContext.Provider>

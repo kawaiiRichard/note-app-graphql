@@ -19,11 +19,12 @@ export const CREATE_NOTE = gql`
       created_at
     }
   }
-  # mutation CreateNote($user_id: ID!, $title: String!, $description: String!) {
-  #   createNote(user_id: $user_id, title: $title, description: $description) {
-  #     title
-  #     description
-  #     user_id
-  #   }
-  # }
+`;
+
+export const DELETE_NOTE = gql`
+  mutation DeleteNote($id: ID!) {
+    deleteNote(id: $id) {
+      id
+    }
+  }
 `;

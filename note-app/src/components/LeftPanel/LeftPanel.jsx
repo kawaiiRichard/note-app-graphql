@@ -4,13 +4,20 @@ import NoteCard from "../NoteCard/NoteCard";
 import { useQuery } from "@apollo/client";
 import { ALL_NOTES } from "../../apollo/graphql/queries";
 
-import { useContext } from "react";
+import { useEffect, useContext } from "react";
 import { NoteContext } from "../../contexts/NoteContext";
 
 function LeftPanel() {
   const { loading, error, data } = useQuery(ALL_NOTES);
   const { selectedNote, setSelectedNote, setIsAddingNote } =
     useContext(NoteContext);
+  const { setTotalNotes } = useContext(NoteContext);
+
+  useEffect(() => {
+    if (data && data.notes) {
+      setTotalNotes(data.notes.length);
+    }
+  }, [data, setTotalNotes]);
 
   const handleNoteClick = (note) => {
     setIsAddingNote(false);
