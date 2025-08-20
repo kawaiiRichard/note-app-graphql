@@ -1,8 +1,9 @@
 import styles from "./LeftPanel.module.css";
 import NoteCard from "../NoteCard/NoteCard";
+import DropdownList from "../DropdownList/DropdownList";
 import { useQuery } from "@apollo/client";
 import { ALL_NOTES } from "../../apollo/graphql/queries";
-import { useEffect, useContext } from "react";
+import { useEffect, useContext, useState } from "react";
 import { NoteContext } from "../../contexts/NoteContext";
 
 function LeftPanel() {
@@ -14,7 +15,9 @@ function LeftPanel() {
     isAddingNote,
     isEditingNote,
   } = useContext(NoteContext);
+
   const { setTotalNotes } = useContext(NoteContext);
+  const [sortOrder, setSortOrder] = useState("none");
 
   useEffect(() => {
     if (data && data.notes) {
@@ -32,6 +35,17 @@ function LeftPanel() {
     }
   };
 
+  const sortNotes = (notes) => {
+    if (sortOrder === "title") {
+      return notes.sort((a, b) => a.title.localeCompare(b.title));
+    } else if (sortOrder === "date") {
+      return notes.sort((a, b) => new Date(a.date) - new Date(b.date));
+    }
+    return notes;
+  };
+
+  const sortedNotes = data?.notes ? sortNotes([...data.notes]) : [];
+
   if (loading) {
     return "Загрузка";
   }
@@ -46,8 +60,10 @@ function LeftPanel() {
         Создать заметку
       </button>
 
+      <DropdownList onSortChange={setSortOrder} />
+
       <div className={styles["cards-list"]}>
-        {data.notes.map((item) => (
+        {sortedNotes.map((item) => (
           <NoteCard
             key={item.id}
             note={item}

@@ -38,6 +38,7 @@
   cursor: pointer;
   transition: border-color 0.25s;
   width: 340px;
+  transition: 0.25s;
 }
 
 .btn:hover {

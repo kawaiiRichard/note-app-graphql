@@ -34,3 +34,9 @@
 .selected {
   border-right: 2px solid green;
 }
+
+.bin {
+  right: 0;
+  width: 30px;
+  cursor: pointer;
+}
