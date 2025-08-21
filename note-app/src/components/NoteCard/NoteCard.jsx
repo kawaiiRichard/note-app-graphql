@@ -17,6 +17,7 @@ function NoteCard({ isSelected, note, onClick, isDisabled }) {
       onClick={handleClick}
     >
       <div className={styles.title}>{note.title}</div>
+      <div className={styles.title}>{note.user_id}</div>
       <div className={styles.description}>
         {note.description.length > maxDescSize
           ? `${note.description.slice(0, maxDescSize)}...`

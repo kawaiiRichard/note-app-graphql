@@ -1,22 +1,39 @@
 import styles from "./LeftPanel.module.css";
 import NoteCard from "../NoteCard/NoteCard";
 import DropdownList from "../DropdownList/DropdownList";
+import CurrentUser from "../CurrentUser/CurrentUser";
 import { useQuery } from "@apollo/client";
-import { ALL_NOTES } from "../../apollo/graphql/queries";
+import { ALL_NOTES, USER_NOTES } from "../../apollo/graphql/queries";
 import { useEffect, useContext, useState } from "react";
 import { NoteContext } from "../../contexts/NoteContext";
+import { UserContext } from "../../contexts/UserContext";
 
 function LeftPanel() {
-  const { loading, error, data } = useQuery(ALL_NOTES);
   const {
     selectedNote,
     setSelectedNote,
     setIsAddingNote,
     isAddingNote,
     isEditingNote,
+    totalNotes,
+    setTotalNotes,
   } = useContext(NoteContext);
+  const { currentUser } = useContext(UserContext);
 
-  const { setTotalNotes } = useContext(NoteContext);
+  const { loading, error, data } = useQuery(
+    currentUser ? USER_NOTES : ALL_NOTES,
+    {
+      variables: currentUser
+        ? {
+            userId: currentUser.id,
+          }
+        : undefined,
+      fetchPolicy: "network-only",
+    }
+  );
+
+  useEffect(() => {}, [currentUser]);
+
   const [sortOrder, setSortOrder] = useState("none");
 
   useEffect(() => {
@@ -60,6 +77,9 @@ function LeftPanel() {
         Создать заметку
       </button>
 
+      <div className="">Всего заметок: {totalNotes}</div>
+
+      <CurrentUser />
       <DropdownList onSortChange={setSortOrder} />
 
       <div className={styles["cards-list"]}>

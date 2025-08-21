@@ -4,9 +4,11 @@ import { CREATE_NOTE, UPDATE_NOTE } from "../../apollo/graphql/mutations";
 import { ALL_NOTES } from "../../apollo/graphql/queries";
 import { useState, useContext, useEffect } from "react";
 import { NoteContext } from "../../contexts/NoteContext";
+import { UserContext } from "../../contexts/UserContext";
 
 function AddNote({ children, editData, onCancel }) {
   const { setIsAddingNote } = useContext(NoteContext);
+  const { currentUser } = useContext(UserContext);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -56,13 +58,22 @@ function AddNote({ children, editData, onCancel }) {
             description: description,
           },
         });
+      } else if (currentUser) {
+        createNote({
+          variables: {
+            title: title,
+            description: description,
+            created_at: new Date().toISOString(),
+            user_id: currentUser.id,
+          },
+        });
       } else {
         createNote({
           variables: {
             title: title,
             description: description,
             created_at: new Date().toISOString(),
-            user_id: 123,
+            user_id: "Общий пользователь",
           },
         });
       }
