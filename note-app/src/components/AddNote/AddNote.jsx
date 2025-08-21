@@ -12,6 +12,7 @@ function AddNote({ children, editData, onCancel }) {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [isValidated, setIsValidated] = useState(false);
 
   const [createNote, { error: createError }] = useMutation(CREATE_NOTE, {
     update(cache, { data: { createNote } }) {
@@ -49,7 +50,11 @@ function AddNote({ children, editData, onCancel }) {
   }, [editData]);
 
   const handleSaveNote = () => {
-    if (title.trim().length && description.trim().length) {
+    setIsValidated(true);
+    const isTitleValid = title.trim().length > 0;
+    const isDescriptionValid = description.trim().length > 0;
+
+    if (isTitleValid && isDescriptionValid) {
       if (editData) {
         updateNote({
           variables: {
@@ -79,6 +84,7 @@ function AddNote({ children, editData, onCancel }) {
       }
       setTitle("");
       setDescription("");
+      setIsValidated(false);
       setIsAddingNote(false);
       if (onCancel) onCancel();
     }
@@ -87,6 +93,7 @@ function AddNote({ children, editData, onCancel }) {
   const handleCancel = () => {
     setTitle("");
     setDescription("");
+    setIsValidated(false);
     setIsAddingNote(false);
     if (onCancel) onCancel();
   };
@@ -100,6 +107,16 @@ function AddNote({ children, editData, onCancel }) {
     }
   };
 
+  const handleTitleChange = (e) => {
+    setTitle(e.target.value);
+    if (isValidated) setIsValidated(false);
+  };
+
+  const handleDescriptionChange = (e) => {
+    setDescription(e.target.value);
+    if (isValidated) setIsValidated(false);
+  };
+
   if (createError || updateError) {
     return <div className={styles.main}>Ошибка</div>;
   }
@@ -107,18 +124,22 @@ function AddNote({ children, editData, onCancel }) {
   return (
     <div className={styles.main}>
       <input
-        className={styles.input}
+        className={`${styles.input} ${
+          isValidated && title.trim() === "" ? styles.empty : ""
+        }`}
         placeholder="Введите название..."
         value={title}
-        onChange={(e) => setTitle(e.target.value)}
+        onChange={handleTitleChange}
         onKeyDown={handleKeyDown}
         type="text"
       />
       <textarea
-        className={styles.textarea}
+        className={`${styles.textarea} ${
+          isValidated && description.trim() === "" ? styles.empty : ""
+        }`}
         placeholder="Введите описание..."
         value={description}
-        onChange={(e) => setDescription(e.target.value)}
+        onChange={handleDescriptionChange}
         onKeyDown={handleKeyDown}
       ></textarea>
 
